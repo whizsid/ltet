@@ -9,9 +9,12 @@ use amethyst::{
     },
     prelude::*,
     renderer::{
-        plugins::{RenderFlat2D, RenderToWindow},
+        plugins::{RenderPbr3D, RenderToWindow},
         types::DefaultBackend,
-        RenderingBundle
+        RenderingBundle,
+        light::{
+            SunLight, Light
+        }
     },
     utils::{
         application_root_dir,
@@ -37,6 +40,7 @@ use amethyst_gltf::{
 mod entities;
 use entities::camera::Camera;
 use entities::soldier::Soldier;
+use entities::behaviour::{r#move, rotate, RotateDirection};
 
 struct LoadingState {
     progress_counter: ProgressCounter,
@@ -49,10 +53,23 @@ struct GamePlayState {
 
 impl SimpleState for GamePlayState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        
-        let camera = Camera::new(data.world);
+        let mut camera = Camera::new(data.world);
         let soldier = Soldier::new(data.world, self.soldier_handle.clone());
+
+        r#move(data.world,&mut camera,
+            (0.0,0.0,-12.0)
+        );
+
+        rotate(data.world,&mut camera,
+            RotateDirection::Horizontal,
+            std::f32::consts::PI
+        );
+
+        let light:Light = SunLight::default().into();
+
+        data.world.create_entity().with(light).build();
     }
+
 }
 
 impl SimpleState for LoadingState {
@@ -119,7 +136,7 @@ fn main() -> amethyst::Result<()> {
                     RenderToWindow::from_config_path(display_config_path)?
                         .with_clear([0.34, 0.36, 0.52, 1.0]),
                 )
-                .with_plugin(RenderFlat2D::default()),
+                .with_plugin(RenderPbr3D::default()),
         )?
         .with_bundle(TransformBundle::new())?;
 
