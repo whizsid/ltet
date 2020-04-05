@@ -1,4 +1,4 @@
 (
   title: "ltet",
-  dimensions: Some((1000, 1000)),
+  dimensions: Some((1024, 768)),
 )
